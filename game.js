@@ -77,63 +77,68 @@ dice.onclick = function(event) {
 
 
 
-function Ledder(start, end) {
+function Teleport(start, end) {
 	this.start = start;
 	this.end = end;
 }
 
-var ledders = [];
-var ledderAmout = 2;
+var teleports = [];
+var teleportsAmout = 6;
 
-function randLedder() {
-	let maxStart, randStart, randEnd, check;
+function randTeleport() {
+	let maxStart, randStart, randEnd;
 
-	check = false;
+	maxStart = amount * amount - (amount + 2);
 
-	// максимальная начальная ячейка
-	maxStart = amount * amount - (amount + 2); // 88
-
-	randStart = -0.5 + Math.random() * ( maxStart + 1 ); // от нуля до 88
+	randStart = -0.5 + Math.random() * ( maxStart + 1 );
 	randStart = Math.round(randStart);
 
-	// максимальная конечная ячейка
 	maxEnd = 40;	
 	if(maxStart - randStart < 40) {
 		maxEnd = maxStart - randStart;
 	}
-	randEnd = 9.5 + Math.random() * (maxEnd - 10 + 1);
+	randEnd = 9.5 + Math.random() * (maxEnd - 10);
 	randEnd = randStart + Math.round(randEnd);
-
-	ledders.forEach(function(ledder) {
-		if(ledder.start == randStart || 
-			ledder.start == randEnd ||
-			ledder.end == randStart ||
-			ledder.end == randEnd) {
-			check = true;
-			randLedder();
-		};
+	return [randStart, randEnd];
+};
+function checkTeleports() {
+	let check = false;
+	let teleport = randTeleport();
+	teleports.forEach(function(item) {
+		if(item.start == teleport[0] || 
+			item.start == teleport[1] ||
+			item.end == teleport[0] ||
+			item.end == teleport[1]) {
+				check = true;
+				checkTeleports();
+		} 
 	});
-	if(check == false) {
-		let result = new Ledder(randStart, randEnd);
-		ledders.push(result);
-	}		
+	if(check == false) { return teleport};
 };
 
-
-for(let i = 0; i < ledderAmout; i++) {
-	randLedder();
+function makeTeleports() {
+	for(let i = 0; i < teleportsAmout; i++) {
+		let teleport;
+		while(teleport == undefined) {
+			teleport = checkTeleports();		
+		};
+		let result = new Teleport(teleport[0], teleport[1]);
+		teleports.push(result);
+	}
 }
-ledders.forEach(function(ledder) {
+makeTeleports();
+
+
+teleports.forEach(function(teleport) {
 	ctx.fillStyle = 'green';
 	ctx.beginPath();
-	ctx.moveTo(field[ledder.start].x + side/2, field[ledder.start].y + side/2);
-	ctx.lineTo(field[ledder.end].x + side/2, field[ledder.end].y + side/2);
+	ctx.moveTo(field[teleport.start].x + side/2, field[teleport.start].y + side/2);
+	ctx.lineTo(field[teleport.end].x + side/2, field[teleport.end].y + side/2);
 	ctx.closePath();
 	ctx.strokeStyle = 'rgb(0,128,0)';
 	ctx.lineWidth = 5;
 	ctx.stroke();
-
 })
 
 
-console.log(ledders)
+console.log(teleports)
