@@ -44,10 +44,10 @@ dice.onclick = function(event) {
 	game.makeMove()
 };
 
-var snakesAmount = 6;
 var minRange = 10;
 var maxRange = 40;
 var snakes = [];
+var ladders = [];
 var emptyCells = [];
 for(let i = 0; i < amount * amount; i++) {
 	emptyCells.push(i);
@@ -67,27 +67,48 @@ function randomCells() {
   }
 }
 
-function makeSnakes() {
-	for(let i = 0; i < snakesAmount; i++) {
-		let newSnake = randomCells();
-		snakes.push([emptyCells[newSnake[0]], emptyCells[newSnake[1]]]);
-		console.log(newSnake);
+function makeTeleport() {
+		let newCells = randomCells();
+		let newTeleport = [emptyCells[newCells[0]], emptyCells[newCells[1]]];
 		emptyCells = emptyCells.filter(function(number, idx) {
-			return idx != newSnake[0] && idx != newSnake[1];
+			return idx != newCells[0] && idx != newCells[1];
 		});
-		console.log(emptyCells)
+		return newTeleport;
+};
+function makeLadders() {
+	let laddersAmount = 6;
+	for(let i = 0; i < laddersAmount; i++) {
+		let newLadder = makeTeleport();
+		ladders.push(newLadder);
 	}
 };
+function makeSnakes() {
+	let snakesAmount = 6;
+	for(let i = 0; i < snakesAmount; i++) {
+		let newSnake = makeTeleport();
+		snakes.push(newSnake);
+	}
+};
+makeLadders();
 makeSnakes();
 
 snakes.forEach(function(snake, idx) {
-		ctx.strokeStyle = 'rgb(0,128,0)';
-		ctx.beginPath();
-		ctx.moveTo(field[snake[0]].x + side/2, field[snake[0]].y + side/2);
-		ctx.lineTo(field[snake[1]].x + side/2, field[snake[1]].y + side/2);
-		ctx.closePath();
-		ctx.lineWidth = 5;
-		ctx.stroke();
+	ctx.strokeStyle = 'rgb(256,0,0)';
+	ctx.beginPath();
+	ctx.moveTo(field[snake[0]].x + side/2, field[snake[0]].y + side/2);
+	ctx.lineTo(field[snake[1]].x + side/2, field[snake[1]].y + side/2);
+	ctx.closePath();
+	ctx.lineWidth = 5;
+	ctx.stroke();
+});
+ladders.forEach(function(ladder, idx) {
+	ctx.strokeStyle = 'rgb(0,128,0)';
+	ctx.beginPath();
+	ctx.moveTo(field[ladder[0]].x + side/2, field[ladder[0]].y + side/2);
+	ctx.lineTo(field[ladder[1]].x + side/2, field[ladder[1]].y + side/2);
+	ctx.closePath();
+	ctx.lineWidth = 5;
+	ctx.stroke();
 });
 
 var game = {
