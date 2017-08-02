@@ -10,7 +10,7 @@ canvas.width = canvas.height = side * amount;
 function Cell(x, y) {
 	this.x = x;
 	this.y = y;
-} 
+}; 
 for(let i = side * amount - side; i >= 0; i-= side) {
 	if(i%100 != 0) {
 		for(let n = 0; n < side * amount; n+= side) {
@@ -23,7 +23,7 @@ for(let i = side * amount - side; i >= 0; i-= side) {
 			field.push(result);
 		}
 	}
-}
+};
 field.forEach(function(cell, idx) {
 	ctx.fillStyle = 'cyan';
 	ctx.fillRect(cell.x + 4, cell.y + 4, side - 8, side - 8);
@@ -44,74 +44,51 @@ dice.onclick = function(event) {
 	game.makeMove()
 };
 
-
-
-function Teleport(start, end) {
-	this.start = start;
-	this.end = end;
+var snakesAmount = 6;
+var minRange = 10;
+var maxRange = 40;
+var snakes = [];
+var emptyCells = [];
+for(let i = 0; i < amount * amount; i++) {
+	emptyCells.push(i);
 }
 
-var teleports = [];
-var teleportsAmout = 6;
-
-function randTeleport() {
-	let maxStart, randStart, randEnd;
-
-	maxStart = amount * amount - (amount + 2);
-
-	randStart = -0.5 + Math.random() * ( maxStart + 1 );
-	randStart = Math.round(randStart);
-
-	maxEnd = 40;	
-	if(maxStart - randStart < 40) {
-		maxEnd = maxStart - randStart;
-	}
-	randEnd = 9.5 + Math.random() * (maxEnd - 10);
-	randEnd = randStart + Math.round(randEnd);
-	return [randStart, randEnd];
-};
-function checkTeleports() {
-	let check = false;
-	let teleport = randTeleport();
-	teleports.forEach(function(item) {
-		if(item.start == teleport[0] || 
-			item.start == teleport[1] ||
-			item.end == teleport[0] ||
-			item.end == teleport[1]) {
-				check = true;
-				checkTeleports();
-		} 
-	});
-	if(check == false) { return teleport};
-};
-
-function makeTeleports() {
-	for(let i = 0; i < teleportsAmout; i++) {
-		let teleport;
-		while(teleport == undefined) {
-			teleport = checkTeleports();		
-		};
-		let result = new Teleport(teleport[0], teleport[1]);
-		teleports.push(result);
-	}
+function randomCells() {
+  var first = - 0.5 + Math.random() * (emptyCells.length);
+  first = Math.round(first);
+  if(first + minRange >= emptyCells.length - 1) {
+  	second = first - maxRange - 0.5 + Math.random() * ((first - minRange) - (first - maxRange) + 1);
+  	second = Math.round(second);
+  	return [second, first];
+  } else if (first + minRange < emptyCells.length - 1) {
+  	second = first + minRange - 0.5 + Math.random() * (emptyCells.length - (first + minRange));
+  	second = Math.round(second);
+  	return [first, second];
+  }
 }
-makeTeleports();
 
+function makeSnakes() {
+	for(let i = 0; i < snakesAmount; i++) {
+		let newSnake = randomCells();
+		snakes.push([emptyCells[newSnake[0]], emptyCells[newSnake[1]]]);
+		console.log(newSnake);
+		emptyCells = emptyCells.filter(function(number, idx) {
+			return idx != newSnake[0] && idx != newSnake[1];
+		});
+		console.log(emptyCells)
+	}
+};
+makeSnakes();
 
-teleports.forEach(function(teleport, idx) {
-	if(idx < teleports.length/2) { 
+snakes.forEach(function(snake, idx) {
 		ctx.strokeStyle = 'rgb(0,128,0)';
-	}	else {
-		ctx.strokeStyle = 'rgb(256,0,0)';
-	}
 		ctx.beginPath();
-		ctx.moveTo(field[teleport.start].x + side/2, field[teleport.start].y + side/2);
-		ctx.lineTo(field[teleport.end].x + side/2, field[teleport.end].y + side/2);
+		ctx.moveTo(field[snake[0]].x + side/2, field[snake[0]].y + side/2);
+		ctx.lineTo(field[snake[1]].x + side/2, field[snake[1]].y + side/2);
 		ctx.closePath();
 		ctx.lineWidth = 5;
 		ctx.stroke();
-})
-
+});
 
 var game = {
 	makeMove: function() {
@@ -145,7 +122,5 @@ var game = {
 		position: 0
 	}
 }
-
-console.log(teleports)
 
 
